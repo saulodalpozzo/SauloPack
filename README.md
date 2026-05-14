@@ -7,6 +7,7 @@ After Effects ScriptUI tools and expressions by yours truly
 - Text Animator creator
 - Basic bounce expression
 - Velocity bounce expression
+- Multi Slider Controls
 
 ## Installation
 
