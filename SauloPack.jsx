@@ -45,6 +45,13 @@
         // VELOCITY BOUNCE
         // -----------------------------------
 
+        var btnSliderExpr =
+            win.add("button", undefined, "Slider → Expression");
+
+        // -----------------------------------
+        // VELOCITY BOUNCE
+        // -----------------------------------
+
         var btnVelocityBounce =
             win.add("button", undefined, "Velocity Bounce");
 
@@ -272,6 +279,83 @@
 
             app.endUndoGroup();
         };
+
+        // =================================================
+        // SLIDER CONTROL BUTTON
+        // =================================================
+
+        btnSliderExpr.onClick = function(){
+
+    app.beginUndoGroup("Slider Expression Setup");
+
+    var comp = app.project.activeItem;
+
+    if (!(comp instanceof CompItem)){
+        alert("Please select a composition.");
+        return;
+    }
+
+    var layers = comp.selectedLayers;
+    var props = comp.selectedProperties;
+
+    if (layers.length === 0){
+        alert("Select a layer.");
+        return;
+    }
+
+    if (props.length === 0){
+        alert("Select a property.");
+        return;
+    }
+
+    var layer = layers[0];
+    var effects = layer.property("ADBE Effect Parade");
+
+    // ------------------------------------------------
+    // FIND UNIQUE SLIDER NAME
+    // ------------------------------------------------
+
+    var baseName = "Slider Control";
+    var sliderName = baseName;
+    var index = 1;
+
+    function sliderExists(name){
+        for (var i = 1; i <= effects.numProperties; i++){
+            if (effects.property(i).name === name){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    while (sliderExists(sliderName)){
+        index++;
+        sliderName = baseName + " " + index;
+    }
+
+    // ------------------------------------------------
+    // CREATE SLIDER
+    // ------------------------------------------------
+
+    var slider = effects.addProperty("ADBE Slider Control");
+    slider.name = sliderName;
+
+    // ------------------------------------------------
+    // APPLY EXPRESSION
+    // ------------------------------------------------
+
+    var expr =
+        'value + effect("' + sliderName + '")("Slider");';
+
+    for (var i = 0; i < props.length; i++){
+
+        try{
+            props[i].expression = expr;
+        }catch(err){}
+    }
+
+    app.endUndoGroup();
+};
 
         // =================================================
         // PANEL
