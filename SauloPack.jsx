@@ -42,11 +42,11 @@
             win.add("button", undefined, "Bounce");
 
         // -----------------------------------
-        // VELOCITY BOUNCE
+        // SLIDER CONTROLS
         // -----------------------------------
 
-        var btnSliderExpr =
-            win.add("button", undefined, "Slider → Expression");
+        var btnMultiSlider =
+            win.add("button", undefined, "Multi Slider Link");
 
         // -----------------------------------
         // VELOCITY BOUNCE
@@ -281,76 +281,68 @@
         };
 
         // =================================================
-        // SLIDER CONTROL BUTTON
+        // SLIDER CONTROLS BUTTON
         // =================================================
 
-        btnSliderExpr.onClick = function(){
+        btnMultiSlider.onClick = function(){
 
-    app.beginUndoGroup("Slider Expression Setup");
+    app.beginUndoGroup("Multi Slider Link");
 
     var comp = app.project.activeItem;
 
     if (!(comp instanceof CompItem)){
-        alert("Please select a composition.");
+        alert("Select a composition.");
         return;
     }
 
     var layers = comp.selectedLayers;
     var props = comp.selectedProperties;
 
-    if (layers.length === 0){
-        alert("Select a layer.");
-        return;
-    }
-
-    if (props.length === 0){
-        alert("Select a property.");
+    if (layers.length === 0 || props.length === 0){
+        alert("Select a layer + a property.");
         return;
     }
 
     var layer = layers[0];
     var effects = layer.property("ADBE Effect Parade");
 
-    // ------------------------------------------------
-    // FIND UNIQUE SLIDER NAME
-    // ------------------------------------------------
+    // --------------------------------------------
+    // ASK USER FOR NUMBER OF CONTROLLERS
+    // --------------------------------------------
 
-    var baseName = "Slider Control";
-    var sliderName = baseName;
-    var index = 1;
+    var n = parseInt(prompt("How many sliders?", "3"), 10);
 
-    function sliderExists(name){
-        for (var i = 1; i <= effects.numProperties; i++){
-            if (effects.property(i).name === name){
-                return true;
-            }
-        }
-        return false;
+    if (isNaN(n) || n < 1){
+        alert("Invalid number.");
+        return;
     }
 
-    while (sliderExists(sliderName)){
-        index++;
-        sliderName = baseName + " " + index;
+    // --------------------------------------------
+    // CREATE SLIDERS + BUILD EXPRESSION
+    // --------------------------------------------
+
+    var expr = "value";
+
+    for (var i = 1; i <= n; i++){
+
+        var name = "Slider Control " + i;
+
+        var slider = effects.addProperty("ADBE Slider Control");
+        slider.name = name;
+
+        expr += '\r+ effect("' + name + '")("Slider")';
     }
 
-    // ------------------------------------------------
-    // CREATE SLIDER
-    // ------------------------------------------------
+    // --------------------------------------------
+    // APPLY EXPRESSION TO PROPERTY
+    // --------------------------------------------
 
-    var slider = effects.addProperty("ADBE Slider Control");
-    slider.name = sliderName;
-
-    // ------------------------------------------------
-    // APPLY EXPRESSION
-    // ------------------------------------------------
-
-    var expr =
-        'value + effect("' + sliderName + '")("Slider");';
-
-    for (var i = 0; i < props.length; i++){
+    for (var p = 0; p < props.length; p++){
 
         try{
-            props[i].expression = expr;
+            if (props[p] && props[p].canSetExpression){
+                props[p].expression = expr;
+            }
         }catch(err){}
     }
 
