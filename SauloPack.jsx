@@ -55,6 +55,13 @@
         var btnVelocityBounce =
             win.add("button", undefined, "Velocity Bounce");
 
+        // -----------------------------------
+        // CENTER TRIM
+        // -----------------------------------
+
+        var btnCenterTrim =
+            win.add("button", undefined, "Center Trim");
+
         // =================================================
         // TEXT ANIMATOR BUTTON
         // =================================================
@@ -348,6 +355,70 @@
 
     app.endUndoGroup();
 };
+
+        // =================================================
+        // CENTER TRIM BUTTON
+        // =================================================
+
+        btnCenterTrim.onClick = function(){
+
+            app.beginUndoGroup("Center Trim");
+
+            var comp = app.project.activeItem;
+
+            if (!(comp instanceof CompItem)){
+                alert("Select a composition.");
+                return;
+            }
+
+            var layers = comp.selectedLayers;
+
+            if (layers.length === 0){
+                alert("Select a shape layer.");
+                return;
+            }
+
+            for (var i = 0; i < layers.length; i++){
+
+                var layer = layers[i];
+
+                // -----------------------------------
+                // SHAPE CONTENTS
+                // -----------------------------------
+
+                var contents =
+                    layer.property("ADBE Root Vectors Group");
+
+                if (!contents){
+                    continue;
+                }
+
+                // -----------------------------------
+                // ADD TRIM PATHS
+                // -----------------------------------
+
+                var trim =
+                    contents.addProperty("ADBE Vector Filter - Trim");
+
+                // -----------------------------------
+                // GET START PROPERTY
+                // -----------------------------------
+
+                var startProp =
+                    trim.property("ADBE Vector Trim Start");
+
+                // -----------------------------------
+                // APPLY EXPRESSION
+                // -----------------------------------
+
+                startProp.expression =
+                    '100 - content("'
+                    + trim.name +
+                    '").end';
+            }
+
+            app.endUndoGroup();
+        };
 
         // =================================================
         // PANEL
