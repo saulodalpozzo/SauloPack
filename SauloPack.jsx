@@ -87,6 +87,7 @@
         var btnCenterTrim = win.add("button", undefined, "Center Trim");
         var btnTextBox = win.add("button", undefined, "Text Box");
         var btnTextFromBox = win.add("button", undefined, "Text From Box");
+        var btnInvertOrder = win.add("button", undefined, "Invert Order");
 
         // =================================================
         // CREATE TEXT ANIMATOR
@@ -421,6 +422,41 @@
                     textLayer.transform.position.setValue([0,0]);
 
                     textLayer.moveAfter(boxLayer);
+                }
+
+            }finally{
+                app.endUndoGroup();
+            }
+        };
+
+        // =================================================
+        // INVERT ORDER
+        // =================================================
+
+        btnInvertOrder.onClick = function(){
+
+            app.beginUndoGroup("Invert Layer Order");
+
+            try{
+                var comp = getActiveComp();
+                if (!comp) return;
+
+                var layers = comp.selectedLayers;
+
+                if (!layers || layers.length < 2){
+                    alert("Select at least two layers.");
+                    return;
+                }
+
+                // AE selectedLayers is usually top-to-bottom.
+                // Sort by index to be safe.
+                layers.sort(function(a, b){
+                    return a.index - b.index;
+                });
+
+                // Move each top layer after the current bottom layer.
+                for (var i = 0; i < layers.length - 1; i++){
+                    layers[i].moveAfter(layers[layers.length - 1]);
                 }
 
             }finally{
