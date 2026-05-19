@@ -85,6 +85,8 @@
         var btnVelocityBounce = win.add("button", undefined, "Velocity Bounce");
         var btnMultiSlider = win.add("button", undefined, "Multi Slider Link");
         var btnCenterTrim = win.add("button", undefined, "Center Trim");
+        var btnTextBox = win.add("button", undefined, "Text Box");
+        var btnTextFromBox = win.add("button", undefined, "Text From Box");
 
         // =================================================
         // CREATE TEXT ANIMATOR
@@ -277,6 +279,148 @@
 
                     startProp.expression =
                         '100 - content("' + trim.name + '").end';
+                }
+
+            }finally{
+                app.endUndoGroup();
+            }
+        };
+
+        // =================================================
+        // TEXT BOX
+        // =================================================
+
+        btnTextBox.onClick = function(){
+
+            app.beginUndoGroup("Create Text Box");
+
+            try{
+                var comp = getActiveComp();
+                if (!comp) return;
+
+                var layers = comp.selectedLayers;
+
+                if (!layers || layers.length === 0){
+                    alert("Select a text layer.");
+                    return;
+                }
+
+                for (var i = 0; i < layers.length; i++){
+
+                    var txtLayer = layers[i];
+
+                    var boxLayer = comp.layers.addShape();
+                    boxLayer.name = txtLayer.name + " Box";
+
+                    boxLayer.parent = txtLayer;
+
+                    boxLayer.transform.position.setValue([0,0]);
+
+                    addSlider(boxLayer, "Pad", 40);
+
+                    var contents = boxLayer.property("ADBE Root Vectors Group");
+
+                    var rect = contents.addProperty("ADBE Vector Shape - Rect");
+                    rect.name = "Text Box Rectangle";
+
+                    var rectSize = rect.property("ADBE Vector Rect Size");
+                    var rectPosition = rect.property("ADBE Vector Rect Position");
+
+                    rectSize.expression =
+                        'pad = effect("Pad")("Slider");\r' +
+                        'txt = parent.sourceRectAtTime();\r\r' +
+                        '[\r' +
+                        '    txt.width + pad,\r' +
+                        '    txt.height + pad\r' +
+                        ']';
+
+                    rectPosition.expression =
+                        'txt = parent;\r\r' +
+                        'r = txt.sourceRectAtTime();\r\r' +
+                        '[\r' +
+                        '    r.left + r.width/2,\r' +
+                        '    r.top + r.height/2\r' +
+                        ']';
+
+                    var fill = contents.addProperty("ADBE Vector Graphic - Fill");
+                    fill.name = "Fill";
+
+                    fill.property("ADBE Vector Fill Color").setValue([1, 1, 1]);
+
+                    boxLayer.moveAfter(txtLayer);
+                }
+
+            }finally{
+                app.endUndoGroup();
+            }
+        };
+
+        // =================================================
+        // TEXT FROM BOX
+        // =================================================
+
+        btnTextFromBox.onClick = function(){
+
+            app.beginUndoGroup("Create Text From Box");
+
+            try{
+                var comp = getActiveComp();
+                if (!comp) return;
+
+                var layers = comp.selectedLayers;
+
+                if (!layers || layers.length === 0){
+                    alert("Select a shape layer.");
+                    return;
+                }
+
+                for (var i = 0; i < layers.length; i++){
+
+                    var boxLayer = layers[i];
+
+                    var contents = boxLayer.property("ADBE Root Vectors Group");
+                    if (!contents){
+                        alert("Selected layer is not a shape layer.");
+                        continue;
+                    }
+
+                    var rect = null;
+
+                    function findRect(group){
+                        for (var p = 1; p <= group.numProperties; p++){
+                            var prop = group.property(p);
+
+                            if (prop.matchName === "ADBE Vector Shape - Rect"){
+                                return prop;
+                            }
+
+                            if (prop.numProperties && prop.numProperties > 0){
+                                var found = findRect(prop);
+                                if (found) return found;
+                            }
+                        }
+
+                        return null;
+                    }
+
+                    rect = findRect(contents);
+
+                    if (!rect){
+                        alert("No rectangle found in " + boxLayer.name);
+                        continue;
+                    }
+
+                    var rectSize = rect
+                        .property("ADBE Vector Rect Size")
+                        .valueAtTime(comp.time, false);
+
+                    var textLayer = comp.layers.addBoxText(rectSize);
+                    textLayer.name = boxLayer.name + " Text";
+
+                    textLayer.parent = boxLayer;
+                    textLayer.transform.position.setValue([0,0]);
+
+                    textLayer.moveAfter(boxLayer);
                 }
 
             }finally{
