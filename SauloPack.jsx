@@ -88,6 +88,7 @@
         var btnTextBox = win.add("button", undefined, "Text Box");
         var btnTextFromBox = win.add("button", undefined, "Text From Box");
         var btnInvertOrder = win.add("button", undefined, "Invert Order");
+        var btnMasterWiggle = win.add("button", undefined, "Master Wiggle");
 
         // =================================================
         // CREATE TEXT ANIMATOR
@@ -457,6 +458,111 @@
                 // Move each top layer after the current bottom layer.
                 for (var i = 0; i < layers.length - 1; i++){
                     layers[i].moveAfter(layers[layers.length - 1]);
+                }
+
+            }finally{
+                app.endUndoGroup();
+            }
+        };
+
+        // =================================================
+        // MASTER WIGGLE
+        // =================================================
+
+        btnMasterWiggle.onClick = function(){
+
+            app.beginUndoGroup("Master Wiggle");
+
+            try{
+                var comp = getActiveComp();
+                if (!comp) return;
+
+                var layers = comp.selectedLayers;
+
+                if (!layers || layers.length === 0){
+                    alert("Select at least one layer.");
+                    return;
+                }
+
+                // -----------------------------------
+                // UI DIALOG
+                // -----------------------------------
+
+                var dialog = new Window("dialog", "Master Wiggle");
+                dialog.orientation = "column";
+                dialog.alignChildren = ["left", "top"];
+                dialog.spacing = 10;
+                dialog.margins = 16;
+
+                dialog.add("statictext", undefined, "Apply wiggle to:");
+
+                var rbPosition = dialog.add("radiobutton", undefined, "Position");
+                var rbRotation = dialog.add("radiobutton", undefined, "Rotation");
+
+                rbPosition.value = true;
+
+                var btnGroup = dialog.add("group");
+                btnGroup.orientation = "row";
+                btnGroup.alignment = ["right", "top"];
+
+                var okBtn = btnGroup.add("button", undefined, "OK");
+                var cancelBtn = btnGroup.add("button", undefined, "Cancel");
+
+                okBtn.onClick = function(){
+                    dialog.close(1);
+                };
+
+                cancelBtn.onClick = function(){
+                    dialog.close(0);
+                };
+
+                if (dialog.show() !== 1){
+                    return;
+                }
+
+                // -----------------------------------
+                // CREATE NULL
+                // -----------------------------------
+
+                var nullLayer = comp.layers.addNull();
+                nullLayer.name = "Master Wiggle";
+                nullLayer.label = 9;
+
+                addSlider(nullLayer, "Fq", 3);
+                addSlider(nullLayer, "Amp", 20);
+
+                // -----------------------------------
+                // EXPRESSION
+                // -----------------------------------
+
+                var expr =
+                    'fq = parent.effect("Fq")("Slider");\r' +
+                    'amp = parent.effect("Amp")("Slider");\r\r' +
+                    'wiggle(fq, amp);';
+
+                // -----------------------------------
+                // APPLY TO LAYERS
+                // -----------------------------------
+
+                for (var i = 0; i < layers.length; i++){
+
+                    var layer = layers[i];
+
+                    layer.parent = nullLayer;
+
+                    var prop;
+
+                    if (rbPosition.value){
+                        prop = layer.property("ADBE Transform Group")
+                                    .property("ADBE Position");
+                    }else{
+                        prop = layer.property("ADBE Transform Group")
+                                    .property("ADBE Rotate Z");
+                    }
+
+                    if (prop && prop.canSetExpression){
+                        prop.expression = expr;
+                    }
                 }
 
             }finally{
