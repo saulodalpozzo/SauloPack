@@ -89,6 +89,7 @@
         var btnTextFromBox = win.add("button", undefined, "Text From Box");
         var btnInvertOrder = win.add("button", undefined, "Invert Order");
         var btnMasterWiggle = win.add("button", undefined, "Master Wiggle");
+        var btnBatchRename = win.add("button", undefined, "Batch Rename");
 
         // =================================================
         // CREATE TEXT ANIMATOR
@@ -563,6 +564,71 @@
                     if (prop && prop.canSetExpression){
                         prop.expression = expr;
                     }
+                }
+
+            }finally{
+                app.endUndoGroup();
+            }
+        };
+
+        // =================================================
+        // BATCH RENAME
+        // =================================================
+
+        btnBatchRename.onClick = function(){
+
+            app.beginUndoGroup("Batch Rename");
+
+            try{
+                var baseName = prompt("Base name:", "Layer");
+
+                if (!baseName){
+                    return;
+                }
+
+                var renamed = false;
+
+                // -----------------------------------
+                // RENAME SELECTED PROJECT ITEMS
+                // -----------------------------------
+
+                var projectSelection = app.project.selection;
+
+                if (projectSelection && projectSelection.length > 0){
+
+                    for (var i = 0; i < projectSelection.length; i++){
+
+                        var num = ("0" + (i + 1)).slice(-2);
+                        projectSelection[i].name = baseName + "-" + num;
+                        renamed = true;
+                    }
+
+                    return;
+                }
+
+                // -----------------------------------
+                // RENAME SELECTED LAYERS
+                // -----------------------------------
+
+                var comp = getActiveComp();
+
+                if (comp){
+
+                    var layers = comp.selectedLayers;
+
+                    if (layers && layers.length > 0){
+
+                        for (var l = 0; l < layers.length; l++){
+
+                            var layerNum = ("0" + (l + 1)).slice(-2);
+                            layers[l].name = baseName + "-" + layerNum;
+                            renamed = true;
+                        }
+                    }
+                }
+
+                if (!renamed){
+                    alert("Select layers in a comp or items in the Project panel.");
                 }
 
             }finally{
