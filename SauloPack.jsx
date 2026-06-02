@@ -90,6 +90,7 @@
         var btnInvertOrder = win.add("button", undefined, "Invert Order");
         var btnMasterWiggle = win.add("button", undefined, "Master Wiggle");
         var btnBatchRename = win.add("button", undefined, "Batch Rename");
+        var btnSplitDimensions = win.add("button", undefined, "Split Dimensions");
 
         // =================================================
         // CREATE TEXT ANIMATOR
@@ -621,6 +622,41 @@
                 }
 
                 alert("Select layers in a comp or items in the Project panel.");
+
+            }finally{
+                app.endUndoGroup();
+            }
+        };
+
+        // =================================================
+        // SPLIT DIMENSIONS
+        // =================================================
+
+        btnSplitDimensions.onClick = function(){
+
+            app.beginUndoGroup("Split Dimensions");
+
+            try{
+                var comp = getActiveComp();
+                if (!comp) return;
+
+                var layers = comp.selectedLayers;
+
+                if (!layers || layers.length === 0){
+                    alert("Select at least one layer.");
+                    return;
+                }
+
+                for (var i = 0; i < layers.length; i++){
+
+                    var pos = layers[i]
+                        .property("ADBE Transform Group")
+                        .property("ADBE Position");
+
+                    if (pos && pos.dimensionsSeparated !== true){
+                        pos.dimensionsSeparated = true;
+                    }
+                }
 
             }finally{
                 app.endUndoGroup();
