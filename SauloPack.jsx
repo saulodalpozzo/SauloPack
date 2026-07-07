@@ -92,6 +92,18 @@
         var btnBatchRename = win.add("button", undefined, "Batch Rename");
         var btnSplitDimensions = win.add("button", undefined, "Split Dimensions");
 
+        btnTextAnimator.helpTip = "Creates a text layer with per-character delay animator\ndriven by Anim and Delay sliders.";
+        btnBounce.helpTip = "Applies a damped-sine bounce expression\nto selected properties.";
+        btnVelocityBounce.helpTip = "Applies a velocity-driven overshoot expression\nthat reads keyframe velocity at each key.";
+        btnMultiSlider.helpTip = "Adds N sliders to the first selected layer\nand sums them into the selected properties.";
+        btnCenterTrim.helpTip = "Adds Trim Paths to selected shape layers\nwith Start linked to 100 - End for a center-out trim.";
+        btnTextBox.helpTip = "Creates an auto-sizing background rectangle\nparented to each selected text layer.";
+        btnTextFromBox.helpTip = "Creates a paragraph text layer sized to\nthe rectangle found in each selected shape layer.";
+        btnInvertOrder.helpTip = "Reverses the stacking order\nof the selected layers.";
+        btnMasterWiggle.helpTip = "Creates a master null with Fq and Amp sliders\nand applies a linked wiggle to selected layers.";
+        btnBatchRename.helpTip = "Renames selected layers or project items\nsequentially using a base name you provide.";
+        btnSplitDimensions.helpTip = "Enables Separate Dimensions on Position\nfor all selected layers.";
+
         // =================================================
         // CREATE TEXT ANIMATOR
         // =================================================
