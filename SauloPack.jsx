@@ -120,7 +120,7 @@
                 textLayer.name = "Text";
 
                 addSlider(textLayer, "Anim", 100);
-                addSlider(textLayer, "Delay", 0.05);
+                addSlider(textLayer, "Delay", 3);
 
                 var animProp = textLayer
                     .property("ADBE Effect Parade")
@@ -150,7 +150,7 @@
 
                 amount.expression =
                     'anim = effect("Anim")("Slider");\r' +
-                    'delay = effect("Delay")("Slider");\r' +
+                    'delay = framesToTime(effect("Delay")("Slider"));\r' +
                     'd = delay * (textIndex - 1);\r\r' +
                     'anim.valueAtTime(time - d);';
 
